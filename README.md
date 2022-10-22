@@ -13,7 +13,11 @@ https://ros-planning.github.io/moveit_tutorials/doc/getting_started/getting_star
 
 Follow this tutorial to setup moveit and all the required packages on your computer/VM. Double check that it works by following this tutorial. If you can get the panda arm to move about successfully then moveit should be ready to go
 
-3. Copy over all the packages in this repo under "ros_packages" to the src folder in your catkin workspace. 
+3. If you've been following this tutorial: 
+
+https://roboticscasual.com/robotics-tutorials/?fbclid=IwAR2pqvCAhUTzn55wen7e8GJRhOzpmYA0ypSD4DwCAzm5ZWLmcwBqXW4ggr0
+
+you should have most or all the packages needed to launch the ur5 robot along with the camera correctly. If  not you can just copy over whatever packages you need from ur5_tutorial_packages onto your workspace src folder. 
 
 ## Launching the robot and world
 
@@ -36,3 +40,35 @@ Navigate to **ur5_gripper_moveit_config/launch/gazebo.launch** and find the line
     respawn="false" output="screen" /> `
 
 edit the -x, -y and -z arguments to change the location of the robot spawned in gazebo. 
+
+## How to create and modify your own packages
+
+We wanna keep this git repo and the ros workspace separate, but still be able to reflect changes on both directories at the same time. The way we're gonna do that is through symbolic linking. If you wanna know what symboli linking exactly is have a look at this: 
+https://www.howtogeek.com/howto/16226/complete-guide-to-symbolic-links-symlinks-on-windows-or-linux/
+
+but in short what this will allow us to do is make changes to the package we made, and then have it not only build and run in your workspace, but also get tracked by git, and we dont have to worry about actually copy pasting the folders anywhere. 
+
+### Steps on creating the new package
+
+1. Make a new folder in the git repo wherever you wanna do it. E.g lets say I wanna make a new package called test_pkg under actuation packages. 
+
+`mkdir test_pkg`
+`cd test_pkg`
+`catkin_create_pkg test_pkg std_msgs rospy roscpp`
+
+2. Add a symbolic link between the package in the repo and your workspace:
+
+`ln-s (path to where u cloned the repo)/MMAN4020_TNSW_ROBOT/actuation_packages/ (path to your workspace)/src/`
+
+3. see if you find your packge in src folder and build and run it successfully in catkin
+
+
+## Making changes to the git repo
+
+1. Make your own git branch
+
+`git checkout -b "your branch name"`
+
+2. Once its ready for merge create a pull request and assign someone to review it:
+
+https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request
