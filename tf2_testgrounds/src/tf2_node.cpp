@@ -44,7 +44,7 @@ geometry_msgs::Point transformFrames(geometry_msgs::Point p, const std::string f
     
 //     // calculate targetpose using frame transformations
 
-//     targetPose.position = transformFrames(objectLocationGlobal, "map", "robot");
+//     targetPose.position = transformFrames(objectLocationGlobal, "map", "robot_base");
 
 //     // Other calculations
 
@@ -60,10 +60,10 @@ geometry_msgs::PoseStamped getTargetPosition()
 {
   geometry_msgs::PoseStamped targetPose;
 
-  targetPose.pose.position = transformFrames(objectLocationGlobal, "map", "robot");
+  targetPose.pose.position = transformFrames(objectLocationGlobal, "map", "robot_base");
   // Other calculations to get target pose
 
-  targetPose.header.frame_id = "robot";
+  targetPose.header.frame_id = "robot_base";
   targetPose.header.stamp = ros::Time::now();
 
   return targetPose;
@@ -71,7 +71,7 @@ geometry_msgs::PoseStamped getTargetPosition()
 
 void locationCallback(nav_msgs::Odometry msg)
 {
-  ROS_INFO_STREAM("Received location data");
+  //ROS_INFO_STREAM("Received location data");
 
   // Separate by header if map or odom - only take odom
   if (msg.header.frame_id == "odom")
@@ -82,7 +82,7 @@ void locationCallback(nav_msgs::Odometry msg)
 
 void objectCallback(geometry_msgs::Point msg)
 {
-  ROS_INFO_STREAM("Received candybar location data");
+  //ROS_INFO_STREAM("Received candybar location data");
 
   // Assume location is in map frame
   objectLocationGlobal = msg;
@@ -101,10 +101,11 @@ int main(int argc, char** argv){
   // Define static frame transformations
   geometry_msgs::TransformStamped base2robot;
   geometry_msgs::TransformStamped base2camera;
+  geometry_msgs::TransformStamped world2map;
 
   base2robot.header.stamp = ros::Time::now();
   base2robot.header.frame_id = "base_link";
-  base2robot.child_frame_id = "robot";
+  base2robot.child_frame_id = "robot_base";
   base2robot.transform.translation.x = 0.0;
   base2robot.transform.translation.y = 0.0;
   base2robot.transform.translation.z = 0.0;
@@ -124,11 +125,24 @@ int main(int argc, char** argv){
   base2camera.transform.rotation.z = 0.0;
   base2camera.transform.rotation.w = 1.0;
 
+  world2map.header.stamp = ros::Time::now();
+  world2map.header.frame_id = "world";
+  world2map.child_frame_id = "map";
+  world2map.transform.translation.x = 0.0;
+  world2map.transform.translation.y = 0.0;
+  world2map.transform.translation.z = 5.0;
+  world2map.transform.rotation.x = 0.0;
+  world2map.transform.rotation.y = 0.0;
+  world2map.transform.rotation.z = 0.0;
+  world2map.transform.rotation.w = 1.0;
+
   // Broadcast static frame transformations
   br.sendTransform(base2robot);
-  ROS_INFO_STREAM("Broadcasting base_link-->robot transform");
+  ROS_INFO_STREAM("Broadcasting base_link-->robot_base transform");
   br.sendTransform(base2camera);
   ROS_INFO_STREAM("Broadcasting base_link-->camera transform");
+  br.sendTransform(world2map);
+  ROS_INFO_STREAM("Broadcasting world-->map transform");
 
   ros::spinOnce();
 
@@ -150,9 +164,11 @@ int main(int argc, char** argv){
     try {
       geometry_msgs::PoseStamped targetPosition = getTargetPosition();
       targetPub.publish(targetPosition);
-      ROS_INFO_STREAM("Publishing robot target location:\n" << targetPosition.pose);
+      //ROS_INFO_STREAM("Publishing robot target location:\n" << targetPosition.pose);
     }
     catch (tf2::ExtrapolationException &e) {
+    }
+    catch (tf2::LookupException &e) {
     }
     
     ros::spinOnce();

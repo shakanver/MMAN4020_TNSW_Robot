@@ -34,6 +34,15 @@ bool update_target(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response 
 {
   operationCount++;
 
+  if (operationCount >= sizeof(operationOrder) / sizeof(char))
+  {
+    res.success = true;
+    res.message = "STOP PLZ";
+    ROS_INFO("End of operation reached");
+
+    return true;
+  }
+
   if (operationOrder[operationCount] == 'c')
   {
     res.message = "candybar";
@@ -54,7 +63,7 @@ bool update_target(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response 
 
 void cameraConeCallback(geometry_msgs::PoseArray msg)
 {
-  ROS_INFO_STREAM("Received candybar location data");
+  //ROS_INFO_STREAM("Received candybar location data");
 
   foundConeLocations.clear();
 
@@ -95,7 +104,7 @@ void cameraConeCallback(geometry_msgs::PoseArray msg)
 
 void cameraSpigotCallback(geometry_msgs::PoseArray msg)
 {
-  ROS_INFO_STREAM("Received spigot location data");
+  //ROS_INFO_STREAM("Received spigot location data");
 
   foundSpigotLocations.clear();
 
@@ -244,7 +253,7 @@ int main(int argc, char** argv) {
     if (found)
     {
         objectPub.publish(targetFeature);
-        ROS_INFO_STREAM("Publishing target feature location of type " << operationOrder[operationCount]);
+        //ROS_INFO_STREAM("Publishing target feature location of type " << operationOrder[operationCount]);
     }
     else {
         ROS_INFO("An associated landmark was not found by the camera");
