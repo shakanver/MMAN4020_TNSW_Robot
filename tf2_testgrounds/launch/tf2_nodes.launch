@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="tf2_testgrounds" name="fake_publisher" type="fake_publisher"/>
+    <node pkg="tf2_testgrounds" name="tf2_node" type="tf2_node" output="screen"/>
+    <node pkg="tf2_testgrounds" name="data_associator" type="data_associator" output="screen"/>
+    
+</launch>

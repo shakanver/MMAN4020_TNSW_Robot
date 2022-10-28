@@ -13,6 +13,8 @@
 
 #define DISTANCE_THRESHOLD 0.05
 
+const std::string OOI_LOCATION_FILE = "/home/neoblivion/integration_testing/ooi_locations.csv";
+
 int operationCount = -1;
 int spigotCount = -1;
 int coneCount = -1;
@@ -101,7 +103,7 @@ void cameraSpigotCallback(geometry_msgs::PoseArray msg)
   geometry_msgs::TransformStamped transform;
   try {
     transform = tf_buffer.lookupTransform("map", "camera", ros::Time(0));
-
+    
     for (geometry_msgs::Pose p : msg.poses)
     {
         // Transform data
@@ -113,7 +115,7 @@ void cameraSpigotCallback(geometry_msgs::PoseArray msg)
         for (int i = 0; i < spigotLocations.size(); i++)
         {
             double distance = sqrt(pow(spigotLocations[i][0]-temp.x,2) + pow(spigotLocations[i][1]-temp.y,2));
-            
+
             if (distance <= DISTANCE_THRESHOLD)
             {
                 association = i;
@@ -134,10 +136,14 @@ void cameraSpigotCallback(geometry_msgs::PoseArray msg)
 
 void readMapData()
 {
+    // char temp[100];
+    // getcwd(temp, sizeof(temp));
+    // ROS_INFO_STREAM(temp);
     ROS_INFO("Reading map data");
     
     std::ifstream fin;
-    fin.open("ooi_locations.csv");
+    // fin.open("ooi_locations.csv");
+    fin.open(OOI_LOCATION_FILE);
 
     std::string line, part, type;
     std::vector<std::string> row;
@@ -162,10 +168,12 @@ void readMapData()
         if (type == "c")
         {
             coneLocations.push_back({x,y});
+            ROS_INFO_STREAM("c " << x << " " << y);
         }
         else if (type == "s")
         {
             spigotLocations.push_back({x,y});
+            ROS_INFO_STREAM("s " << x << " " << y);
         }
     }
 
