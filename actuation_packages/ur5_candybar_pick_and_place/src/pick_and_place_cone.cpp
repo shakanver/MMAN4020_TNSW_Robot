@@ -152,139 +152,140 @@ int main(int argc, char** argv)
         {
             ROS_INFO_STREAM("Placing candybar at spigot at:");
             ROS_INFO_STREAM(staticRobotTarget);
+
+            // 1. Move to home position
+            move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
+
+            bool success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning Home position: %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //2. Orient the TCP so that its horizontal
+            geometry_msgs::PoseStamped current_pose;
+            current_pose = move_group_interface_arm.getCurrentPose("ee_link");
+
+            geometry_msgs::Pose target_pose1;
+            tf2::Quaternion quat_tf;
+            quat_tf.setRPY(M_PI,0,M_PI/2);
+            quat_tf = quat_tf.normalize();
+            geometry_msgs::Quaternion quat_msg;
+            quat_msg = tf2::toMsg(quat_tf);
+            target_pose1.orientation = quat_msg;
+            target_pose1.position.x = 0.0;
+            target_pose1.position.y = 0.5;
+            target_pose1.position.z = 0.2;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning TCP horizontal position: %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //3. Open the gripper
+            moveit::planning_interface::MoveGroupInterface::Plan my_plan_gripper;
+
+            move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
+
+            success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
+
+            move_group_interface_gripper.move();
+
+            // 4. Move the TCP close to the object
+            target_pose1.position.y = target_pose1.position.y + 0.15;
+            // target_pose1.position.z = target_pose1.position.z - 0.01;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to Move TCP close to object %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            // 5. Close the  gripper
+            move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("closed"));
+
+            success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning gripper close %s", success ? "" : "FAILED");
+
+            move_group_interface_gripper.move();
+
+            // 6. Lift the Candy Bar up
+            target_pose1.position.z = target_pose1.position.z + 0.3;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to Lift Candy Bar up %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //7. Move Candy bar to the spigot hole
+            target_pose1.position.x = target_pose1.position.x + 0.2;
+            target_pose1.position.y = 0.35;
+            
+
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to Move Candy Bar to Spigot Hole %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            // 8. Lower Candy Bar
+            target_pose1.position.z = target_pose1.position.z - 0.3;
+
+
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            // 9. Open the gripper
+
+            move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
+
+            success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
+
+            move_group_interface_gripper.move();
+
+            //10. Exit 
+            target_pose1.position.y = target_pose1.position.y - 0.2;
+
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //11. Go back to home pose
+            move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning Home position: %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
         }
         else
         {
             ROS_INFO_STREAM("Unknown command: " << message);
         }
         
-        // 1. Move to home position
-        move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
-
-        bool success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning Home position: %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        //2. Orient the TCP so that its horizontal
-        geometry_msgs::PoseStamped current_pose;
-        current_pose = move_group_interface_arm.getCurrentPose("ee_link");
-
-        geometry_msgs::Pose target_pose1;
-        tf2::Quaternion quat_tf;
-        quat_tf.setRPY(M_PI,0,M_PI/2);
-        quat_tf = quat_tf.normalize();
-        geometry_msgs::Quaternion quat_msg;
-        quat_msg = tf2::toMsg(quat_tf);
-        target_pose1.orientation = quat_msg;
-        target_pose1.position.x = 0.0;
-        target_pose1.position.y = 0.5;
-        target_pose1.position.z = 0.2;
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning TCP horizontal position: %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        //3. Open the gripper
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan_gripper;
-
-        move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
-
-        success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
-
-        move_group_interface_gripper.move();
-
-        // 4. Move the TCP close to the object
-        target_pose1.position.y = target_pose1.position.y + 0.15;
-        // target_pose1.position.z = target_pose1.position.z - 0.01;
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to Move TCP close to object %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        // 5. Close the  gripper
-        move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("closed"));
-
-        success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning gripper close %s", success ? "" : "FAILED");
-
-        move_group_interface_gripper.move();
-
-        // 6. Lift the Candy Bar up
-        target_pose1.position.z = target_pose1.position.z + 0.3;
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to Lift Candy Bar up %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        //7. Move Candy bar to the spigot hole
-        target_pose1.position.x = target_pose1.position.x + 0.2;
-        target_pose1.position.y = 0.35;
         
-
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to Move Candy Bar to Spigot Hole %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        // 8. Lower Candy Bar
-        target_pose1.position.z = target_pose1.position.z - 0.3;
-
-
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        // 9. Open the gripper
-
-        move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
-
-        success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
-
-        move_group_interface_gripper.move();
-
-        //10. Exit 
-        target_pose1.position.y = target_pose1.position.y - 0.2;
-
-        move_group_interface_arm.setPoseTarget(target_pose1);
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
-        //11. Go back to home pose
-        move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
-
-        success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        ROS_INFO_NAMED("tutorial", "Planning Home position: %s", success ? "" : "FAILED");
-
-        move_group_interface_arm.move();
-
         // Send next operation request
         ros::Duration(1).sleep();
 
