@@ -33,7 +33,7 @@ Run the following command:
 
 Source your catkin workspace, you'll neet to do this or non of your built packages will run:
 
-`source ~/catkin_ws/devel.sh`
+`source ~/catkin_ws/devel/setup.sh`
 
 To launch the world with the robot in it, run the following commands
 
