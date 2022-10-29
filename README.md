@@ -19,12 +19,26 @@ https://roboticscasual.com/robotics-tutorials/?fbclid=IwAR2pqvCAhUTzn55wen7e8GJR
 
 you should have most or all the packages needed to launch the ur5 robot along with the camera correctly. If  not you can just copy over whatever packages you need from ur5_tutorial_packages onto your workspace src folder. 
 
-## Launching the robot and world
+## Launching the robot and World
+
+### Code Compilation
+
+Navigate to your workspace (example below):
+
+`cd ~/catkin_ws/`
+
+Run the following command:
+
+`catkin_make`
+
+Source your catkin workspace, you'll neet to do this or non of your built packages will run:
+
+`source ~/catkin_ws/devel.sh`
 
 To launch the world with the robot in it, run the following commands
 
 `roslaunch ur5_gripper_moveit_config demo_gazebo.launch`
-
+s
 To launch the node that will command the robot to perform the pick and places function, run the following command: 
 
 `rosrun ur5_candybar_pick_and_place pick_and_place_cone`
