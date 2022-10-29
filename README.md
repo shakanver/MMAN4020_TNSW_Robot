@@ -25,6 +25,10 @@ To launch the world with the robot in it, run the following commands
 
 `roslaunch ur5_gripper_moveit_config demo_gazebo.launch`
 
+To launch the node that will command the robot to perform the pick and places function, run the following command: 
+
+`rosrun ur5_candybar_pick_and_place pick_and_place_cone`
+
 ### Launching different worlds
 
 If you want to spawn the robot in a different world you'll need to go into **ur5_gripper_moveit_config/launch/gazebo.launch**, locate the line 
