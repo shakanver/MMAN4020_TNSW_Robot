@@ -147,7 +147,7 @@ int main(int argc, char** argv){
   ros::spinOnce();
 
   // Initialise Subscriber/Publisher nodes
-  ros::Subscriber locationSub = node.subscribe("odometry/filtered", 1000, locationCallback);
+//   ros::Subscriber locationSub = node.subscribe("odometry/filtered", 1000, locationCallback);
   ros::Subscriber objectSub = node.subscribe("featurePositions/next", 1000, objectCallback);
 
   ros::Publisher targetPub = node.advertise<geometry_msgs::PoseStamped>("robotTarget", 1000);
