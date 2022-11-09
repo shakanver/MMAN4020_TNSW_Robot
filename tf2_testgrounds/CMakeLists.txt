@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
    FILES
    SendTarget.srv
+   box_and_target_position.srv
 )
 
 generate_messages(
