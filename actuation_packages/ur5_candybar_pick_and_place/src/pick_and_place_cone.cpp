@@ -27,7 +27,6 @@ void targetCallback(geometry_msgs::PoseStamped msg)
 
 void addObjectToPlanningScene(moveit::planning_interface::MoveGroupInterface& move_group_interface_arm) 
 {
-
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     robot_model_loader::RobotModelLoaderPtr robot_model_loader(new robot_model_loader::RobotModelLoader("robot_description"));
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor(new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
