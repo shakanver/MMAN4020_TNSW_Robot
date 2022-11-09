@@ -21,8 +21,8 @@ int main(int argc, char** argv){
   // Publish odom pos
   
   ros::Publisher locationPub = node.advertise<nav_msgs::Odometry>("odometry/filtered", 1000);
-  ros::Publisher conePub = node.advertise<geometry_msgs::PoseArray>("conePositions/camera", 1000);
-  ros::Publisher spigPub = node.advertise<geometry_msgs::PoseArray>("spigotPositions/camera", 1000);
+//   ros::Publisher conePub = node.advertise<geometry_msgs::PoseArray>("conePositions/camera", 1000);
+//   ros::Publisher spigPub = node.advertise<geometry_msgs::PoseArray>("spigotPositions/camera", 1000);
 
   tf2_ros::TransformBroadcaster br;
 
@@ -31,27 +31,27 @@ int main(int argc, char** argv){
   while (ros::ok())
   {
     // Update parameters
-    geometry_msgs::Pose temp;
-    temp.position.x = 2.0;
-    temp.position.y = 7.0;
-    temp.position.z = 0.0;
-    geometry_msgs::Pose temp2;
-    temp2.position.x = 10.01;
-    temp2.position.y = 9.96;
-    temp2.position.z = 0.0;
-    coneLocationsCamera.header.stamp = ros::Time::now();
-    coneLocationsCamera.header.frame_id = "camera";
-    coneLocationsCamera.poses = {temp, temp2};
+//     geometry_msgs::Pose temp;
+//     temp.position.x = 2.0;
+//     temp.position.y = 7.0;
+//     temp.position.z = 0.0;
+//     geometry_msgs::Pose temp2;
+//     temp2.position.x = 10.01;
+//     temp2.position.y = 9.96;
+//     temp2.position.z = 0.0;
+//     coneLocationsCamera.header.stamp = ros::Time::now();
+//     coneLocationsCamera.header.frame_id = "camera";
+//     coneLocationsCamera.poses = {temp, temp2};
 
-    temp.position.x = -0.02;
-    temp.position.y = 5.03;
-    temp.position.z = 0.0;
-    temp2.position.x = 10.01;
-    temp2.position.y = 9.95;
-    temp2.position.z = 0.0;
-    spigotLocationsCamera.header.stamp = ros::Time::now();
-    spigotLocationsCamera.header.frame_id = "camera";
-    spigotLocationsCamera.poses = {temp, temp2};
+//     temp.position.x = -0.02;
+//     temp.position.y = 5.03;
+//     temp.position.z = 0.0;
+//     temp2.position.x = 10.01;
+//     temp2.position.y = 9.95;
+//     temp2.position.z = 0.0;
+//     spigotLocationsCamera.header.stamp = ros::Time::now();
+//     spigotLocationsCamera.header.frame_id = "camera";
+//     spigotLocationsCamera.poses = {temp, temp2};
 
     robotLocationOdom.header.stamp = ros::Time::now();
     robotLocationOdom.header.frame_id = "odom";
@@ -93,10 +93,10 @@ int main(int argc, char** argv){
     ROS_INFO_STREAM("Broadcasting odom-->base_link transform");
     locationPub.publish(robotLocationOdom);
     ROS_INFO_STREAM("Publishing robot location");
-    conePub.publish(coneLocationsCamera);
-    ROS_INFO_STREAM("Publishing candy bar locations");
-    spigPub.publish(spigotLocationsCamera);
-    ROS_INFO_STREAM("Publishing spigot locations");
+//     conePub.publish(coneLocationsCamera);
+//     ROS_INFO_STREAM("Publishing candy bar locations");
+//     spigPub.publish(spigotLocationsCamera);
+//     ROS_INFO_STREAM("Publishing spigot locations");
 
     ros::spinOnce();
     loop_rate.sleep();
