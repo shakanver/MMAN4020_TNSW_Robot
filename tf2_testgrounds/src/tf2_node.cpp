@@ -60,10 +60,10 @@ geometry_msgs::PoseStamped getTargetPosition()
 {
   geometry_msgs::PoseStamped targetPose;
 
-  targetPose.pose.position = transformFrames(objectLocationGlobal, "map", "robot_base");
+  targetPose.pose.position = transformFrames(objectLocationGlobal, "map", "base_link");
   // Other calculations to get target pose
 
-  targetPose.header.frame_id = "robot_base";
+  targetPose.header.frame_id = "base_link";
   targetPose.header.stamp = ros::Time::now();
 
   return targetPose;
@@ -161,8 +161,8 @@ int main(int argc, char** argv){
   odom2base.transform.rotation.w = 1.0;
 
   // Broadcast static frame transformations
-  br.sendTransform(base2robot);
-  ROS_INFO_STREAM("Broadcasting base_link-->robot_base transform");
+//   br.sendTransform(base2robot);
+//   ROS_INFO_STREAM("Broadcasting base_link-->robot_base transform");
   br.sendTransform(base2camera);
   ROS_INFO_STREAM("Broadcasting base_link-->camera transform");
   br.sendTransform(world2map);
