@@ -102,6 +102,8 @@ int main(int argc, char** argv){
   geometry_msgs::TransformStamped base2robot;
   geometry_msgs::TransformStamped base2camera;
   geometry_msgs::TransformStamped world2map;
+  geometry_msgs::TransformStamped map2odom;
+  geometry_msgs::TransformStamped odom2base;
 
   base2robot.header.stamp = ros::Time::now();
   base2robot.header.frame_id = "base_link";
@@ -135,6 +137,28 @@ int main(int argc, char** argv){
   world2map.transform.rotation.y = 0.0;
   world2map.transform.rotation.z = 0.0;
   world2map.transform.rotation.w = 1.0;
+  
+  map2odom.header.stamp = ros::Time::now();
+  map2odom.header.frame_id = "map";
+  map2odom.child_frame_id = "odom";
+  map2odom.transform.translation.x = 0.0;
+  map2odom.transform.translation.y = 0.0;
+  map2odom.transform.translation.z = 0.0;
+  map2odom.transform.rotation.x = 0.0;
+  map2odom.transform.rotation.y = 0.0;
+  map2odom.transform.rotation.z = 0.0;
+  map2odom.transform.rotation.w = 1.0;
+
+  odom2base.header.stamp = ros::Time::now();
+  odom2base.header.frame_id = "odom";
+  odom2base.child_frame_id = "base_link";
+  odom2base.transform.translation.x = 0.0;
+  odom2base.transform.translation.y = 0.0;
+  odom2base.transform.translation.z = 0.0;
+  odom2base.transform.rotation.x = 0.0;
+  odom2base.transform.rotation.y = 0.0;
+  odom2base.transform.rotation.z = 0.0;
+  odom2base.transform.rotation.w = 1.0;
 
   // Broadcast static frame transformations
   br.sendTransform(base2robot);
@@ -143,6 +167,10 @@ int main(int argc, char** argv){
   ROS_INFO_STREAM("Broadcasting base_link-->camera transform");
   br.sendTransform(world2map);
   ROS_INFO_STREAM("Broadcasting world-->map transform");
+  br.sendTransform(map2odom);
+  ROS_INFO_STREAM("Broadcasting map-->odom transform");
+  br.sendTransform(odom2base);
+  ROS_INFO_STREAM("Broadcasting odom-->base_link transform");
 
   ros::spinOnce();
 
