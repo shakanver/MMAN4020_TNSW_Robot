@@ -53,13 +53,13 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(opencv_extract_object_positions src/opencv_extract_object_positions.cpp)
-add_executable(ligma src/ligma.cpp)
+add_executable(contours src/contours.cpp)
+add_executable(template_matching src/template_matching.cpp)
 
-add_dependencies(opencv_extract_object_positions opencv_services_generate_messages_cpp)
-add_dependencies(ligma opencv_services_generate_messages_cpp)
+add_dependencies(contours opencv_services_generate_messages_cpp)
+add_dependencies(template_matching opencv_services_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(opencv_extract_object_positions ${catkin_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(ligma ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(contours ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(template_matching ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
