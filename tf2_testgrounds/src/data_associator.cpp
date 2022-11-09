@@ -75,7 +75,7 @@ bool updateOperation(std_srvs::Trigger::Request &req, std_srvs::Trigger::Respons
 
   res.success = true;
   
-  // Update current operation target
+  // Update current operation target - given in map frame
   updateCurrTarget();
 
   ROS_INFO_STREAM("Updated target to next " << res.message << " for operation No." << operationCount);
@@ -97,10 +97,10 @@ void updateCurrTarget()
     bool found = false;
     int association = -1;
     double foundX, foundY = 0;
+    geometry_msgs::Point temp;
     // If operation is to place cone in spigot - we need to detect spigot
     if (operationOrder[operationCount] == 's')
     {
-      geometry_msgs::Point temp;
       tf2::doTransform(foundSpigotLocation, temp, transform);
       
       for (int i = 0; i < spigotLocations.size(); i++)
@@ -149,14 +149,7 @@ void updateCurrTarget()
       }
       else
       {
-        if (operationOrder[operationCount] == 's')
-        {
-          currTarget = foundSpigotLocation;
-        }
-        else if (operationOrder[operationCount] == 'c')
-        {
-          currTarget = foundConeLocation;
-        }
+        currTarget = temp;
       }
       
       ROS_INFO_STREAM("Current target being updated to x: " << currTarget.x << " y: " << currTarget.y << " z: " << currTarget.z);
