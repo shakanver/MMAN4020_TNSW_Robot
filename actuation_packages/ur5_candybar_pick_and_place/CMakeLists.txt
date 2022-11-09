@@ -20,13 +20,15 @@ find_package(catkin REQUIRED
     tf2_geometry_msgs
     actionlib_msgs
     control_msgs
+    geometry_msgs
+    std_srvs
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs trajectory_msgs control_msgs  # Or other packages containing msgs
+  DEPENDENCIES actionlib_msgs std_msgs trajectory_msgs control_msgs geometry_msgs  # Or other packages containing msgs
 )
 
 catkin_package(

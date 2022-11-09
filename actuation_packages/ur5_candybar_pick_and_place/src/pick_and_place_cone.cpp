@@ -8,9 +8,25 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Quaternion.h>
 
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <std_srvs/Trigger.h>
+
+geometry_msgs::Pose robotTarget;
+
+void targetCallback(geometry_msgs::PoseStamped msg)
+{
+    //ROS_INFO_STREAM("Received target pose data");
+
+    // Separate by header if map or odom - only take odom
+    robotTarget = msg.pose;
+
+    //ROS_INFO_STREAM("Target pose update:");
+    //ROS_INFO_STREAM(robotTarget);
+}
+
 void addObjectToPlanningScene(moveit::planning_interface::MoveGroupInterface& move_group_interface_arm) 
 {
-
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     robot_model_loader::RobotModelLoaderPtr robot_model_loader(new robot_model_loader::RobotModelLoader("robot_description"));
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor(new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
@@ -128,6 +144,10 @@ int main(int argc, char** argv)
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
+    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// MOVEIT  SETUP //////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
     // MoveIt operates on sets of joints called "planning groups" and stores them in an object called
     // the `JointModelGroup`. Throughout MoveIt the terms "planning group" and "joint model group"
     // are used interchangably.
@@ -153,117 +173,114 @@ int main(int argc, char** argv)
     moveit::planning_interface::MoveGroupInterface::Plan my_plan_gripper;
 
 
+    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////// SETUP INTERFACE NODES //////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    
+    ros::Subscriber targetSub = n.subscribe("robotTarget", 1000, targetCallback);
+    
+    ros::ServiceClient client = n.serviceClient<std_srvs::Trigger>("update_target");
+    std_srvs::Trigger srv;
+
+    ros::Duration(2).sleep();
+
+    ROS_INFO_STREAM("Sending starting request");
+    bool success = false;
+    std::string message;
+    if (client.call(srv))
+    {
+        success = srv.response.success;
+        message = srv.response.message;
+
+        ROS_INFO_STREAM("Success: " << srv.response.success << " | " << srv.response.message);
+    }
+    else
+    {
+        ROS_ERROR("Failed to call service send_target");
+        return 1;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////////////// ARM MOVING LOGIC! ////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
     //move to ready position
     moveToReadyPose(my_plan_arm, move_group_interface_arm);
 
     //open gripper
     openGripper(my_plan_gripper, move_group_interface_gripper);
 
+    while (success && message != "STOP PLZ")
+    {   
+        // Set target that doesn't update during movement
+        ros::Duration(5).sleep();
+        geometry_msgs::Pose staticRobotTarget = robotTarget;
 
+        // Branch logic for operation modes
+        if (message == "candybar")
+        {
+            ROS_INFO_STREAM("Picking up candybar from:");
+            ROS_INFO_STREAM(staticRobotTarget);
+        }
+        else if (message == "spigot")
+        {
+            ROS_INFO_STREAM("Placing candybar at spigot at:");
+            ROS_INFO_STREAM(staticRobotTarget);
 
-    geometry_msgs::PoseStamped current_pose;
-    current_pose = move_group_interface_arm.getCurrentPose("ee_link");
-    geometry_msgs::Pose target_pose1;
+            geometry_msgs::PoseStamped current_pose;
+            current_pose = move_group_interface_arm.getCurrentPose("ee_link");
+            geometry_msgs::Pose target_pose1;
 
-    // 4. Move the TCP close to the object
-    target_pose1.orientation = current_pose.pose.orientation;
-    target_pose1.position.x = 0.0;
-    target_pose1.position.y = 0.67;
-    target_pose1.position.z = 0.1;
-    move_group_interface_arm.setPoseTarget(target_pose1);
+            // 4. Move the TCP close to the object
+            target_pose1.orientation = current_pose.pose.orientation;
+            target_pose1.position.x = 0.0;
+            target_pose1.position.y = 0.67;
+            target_pose1.position.z = 0.1;
+            move_group_interface_arm.setPoseTarget(target_pose1);
 
-    bool success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            bool success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-    ROS_INFO_NAMED("tutorial", "Planning to Move TCP close to object %s", success ? "" : "FAILED");
+            ROS_INFO_NAMED("tutorial", "Planning to Move TCP close to object %s", success ? "" : "FAILED");
 
-    move_group_interface_arm.move();
+            move_group_interface_arm.move();
 
-    closeGripper(my_plan_gripper, move_group_interface_gripper);
+            closeGripper(my_plan_gripper, move_group_interface_gripper);
 
-    // 6. Lift the Candy Bar up
-    target_pose1.position.z = target_pose1.position.z + 0.2;
-    move_group_interface_arm.setPoseTarget(target_pose1);
+            // 6. Lift the Candy Bar up
+            target_pose1.position.z = target_pose1.position.z + 0.2;
+            move_group_interface_arm.setPoseTarget(target_pose1);
 
-    success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-    ROS_INFO_NAMED("tutorial", "Planning to Lift Candy Bar up %s", success ? "" : "FAILED");
+            ROS_INFO_NAMED("tutorial", "Planning to Lift Candy Bar up %s", success ? "" : "FAILED");
 
-    move_group_interface_arm.move();
+            move_group_interface_arm.move();
+        }
+        else
+        {
+            ROS_INFO_STREAM("Unknown command: " << message);
+        }
+        
+        // Send next operation request
+        ros::Duration(1).sleep();
 
+        ROS_INFO_STREAM("Movement complete. Requesting next target");
+        success = false;
+        if (client.call(srv))
+        {
+            success = srv.response.success;
+            message = srv.response.message;
 
-    // //7. Move Candy bar to the spigot hole
-    // // target_pose1.position.x = target_pose1.position.x + 1.6;
-    // target_pose1.position.y = 0.2;
-    
+            ROS_INFO_STREAM("Success: " << srv.response.success << " | " << srv.response.message);
+        }
+        else
+        {
+            ROS_ERROR("Failed to call service send_target");
+            return 1;
+        }
+    }
 
-    // move_group_interface_arm.setPoseTarget(target_pose1);
-
-    // moveit::core::MoveItErrorCode res = move_group_interface_arm.plan(my_plan_arm);
-    // success = (res == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // std::cout << "fail error code: " << res << "\n";
-    // ROS_INFO_NAMED("tutorial", "Planning to Move Candy Bar to Spigot Hole PART 2 %s", success ? "" : "FAILED");
-
-    // move_group_interface_arm.move();
-
-
-    // target_pose1.position.x = 1.6;
-    // target_pose1.position.y = 0;
-    // target_pose1.position.z = 0.1;
-    
-
-    // move_group_interface_arm.setPoseTarget(target_pose1);
-
-    // res = move_group_interface_arm.plan(my_plan_arm);
-    // success = (res == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // std::cout << "fail error code: " << res << "\n";
-    // ROS_INFO_NAMED("tutorial", "Planning to Move Candy Bar to Spigot Hole %s", success ? "" : "FAILED");
-
-    // move_group_interface_arm.move();
-
-
-
-    // // 8. Lower Candy Bar
-    // target_pose1.position.z = target_pose1.position.z - 0.4;
-
-    // move_group_interface_arm.setPoseTarget(target_pose1);
-
-    // success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
-
-    // move_group_interface_arm.move();
-
-    // // 9. Open the gripper
-
-    // move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
-
-    // success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
-
-    // move_group_interface_gripper.move();
-
-    // //10. Exit 
-    // target_pose1.position.y = target_pose1.position.y - 0.2;
-
-    // move_group_interface_arm.setPoseTarget(target_pose1);
-
-    // success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // ROS_INFO_NAMED("tutorial", "Planning to Lower Candy Bar %s", success ? "" : "FAILED");
-
-    // move_group_interface_arm.move();
-
-    // //11. Go back to home pose
-    // move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
-
-    // success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-    // ROS_INFO_NAMED("tutorial", "Planning Home position: %s", success ? "" : "FAILED");
-
-    // move_group_interface_arm.move();
+    ROS_INFO("Requests completed... Terminating");
 
     ros::shutdown();
     return 0;
