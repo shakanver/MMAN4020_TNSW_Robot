@@ -21,12 +21,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   std_srvs
   sensor_msgs
+  opencv_services
 )
 
 add_service_files(
    FILES
    SendTarget.srv
-   box_and_target_position.srv
+  #  box_and_target_position.srv
 )
 
 generate_messages(
@@ -38,7 +39,6 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include/tf2_testgrounds/
   LIBRARIES tf2_testgrounds
   CATKIN_DEPENDS roscpp rospy tf2 tf2_ros message_generation std_msgs geometry_msgs nav_msgs tf2_eigen tf2_msgs tf2_geometry_msgs std_srvs sensor_msgs
 )

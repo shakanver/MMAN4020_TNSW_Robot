@@ -63,7 +63,7 @@ void apply_cv_algorithms(cv::Mat camera_image) {
 
   // Draw bounding box around cone
   cv::Mat cone_img;
-  cone_img = cv::imread("/home/mooseynair/thesis_ws/src/opencv_services/src/cone_template.png", cv::IMREAD_COLOR);
+  cone_img = cv::imread("/home/shakeel/thesis/MMAN4020_TNSW_Robot/opencv_services/src/cone_template.png", cv::IMREAD_COLOR);
   // cv::TM_CCOEFF_NORMED = 5
   cv::matchTemplate(camera_image, cone_img, cone_result, 5);    // cv::TM_CCOEFF_NORMED = 5
   // normalize( cone_result, cone_result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
@@ -79,7 +79,7 @@ void apply_cv_algorithms(cv::Mat camera_image) {
 
   // Draw bounding box around spigot hole
   cv::Mat spigot_hole_img;
-  spigot_hole_img = cv::imread("/home/mooseynair/thesis_ws/src/opencv_services/src/spigot_hole_template.png", cv::IMREAD_COLOR);
+  spigot_hole_img = cv::imread("/home/shakeel/thesis/MMAN4020_TNSW_Robot/opencv_services/src/new_spigot_hole.png", cv::IMREAD_COLOR);
   cv::matchTemplate(camera_image, spigot_hole_img, spigot_result, 5);    // cv::TM_CCOEFF_NORMED = 5
   // normalize( spigot_result, spigot_result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
   minMaxLoc( spigot_result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat() );

@@ -17,7 +17,7 @@
 // Are we directly forwarding camera data or using ground truh from map?
 bool usingGroundTruth = false;
 
-const std::string OOI_LOCATION_FILE = "/home/neoblivion/integration_testing/ooi_locations.csv";
+const std::string OOI_LOCATION_FILE = "~/home/shakeel/thesis/MMAN4020_TNSW_Robot/tf2_testgrounds/integration_testing/ooi_locations.csv";
 
 int operationCount = -1;
 int spigotCount = -1;
@@ -34,23 +34,14 @@ geometry_msgs::Point currTarget;
 geometry_msgs::Point foundConeLocation;
 geometry_msgs::Point foundSpigotLocation;
 
-opencv_services::box_and_target_position srv;
+//function prototypes
+bool updateOperation(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+void updateCurrTarget();
+void readMapData();
 
 bool updateOperation(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
   operationCount++;
-  
-  // Update cone/spigot locations
-  if (client.call(srv))
-  {
-    geometry_msgs::Point foundConeLocation = srv.response.box_position;
-    geometry_msgs::Point foundSpigotLocation = srv.response.target_position;
-  }
-  else
-  {
-    ROS_ERROR("Failed to call service to update target locations");
-    return 1;
-  }
   
   // Check if we're a the end of operation
   if (operationCount >= sizeof(operationOrder) / sizeof(char))
@@ -125,7 +116,7 @@ void updateCurrTarget()
       
       for (int i = 0; i < coneLocations.size(); i++)
       {
-        double distance = sqrt(pow(coneLocations[i][0]-temp.x,2) + pow(conetLocations[i][1]-temp.y,2));
+        double distance = sqrt(pow(coneLocations[i][0]-temp.x,2) + pow(coneLocations[i][1]-temp.y,2));
             
         if (distance <= DISTANCE_THRESHOLD)
         {
@@ -166,97 +157,12 @@ void updateCurrTarget()
   }
 }
 
-// void cameraConeCallback(geometry_msgs::PoseArray msg)
-// {
-//   //ROS_INFO_STREAM("Received candybar location data");
-
-//   foundConeLocations.clear();
-
-//   // Assume locations are in camera frame - transform to map frame
-//   geometry_msgs::TransformStamped transform;
-//   try {
-//     transform = tf_buffer.lookupTransform("map", "camera", ros::Time(0));
-
-//     for (geometry_msgs::Pose p : msg.poses)
-//     {
-//         // Transform data
-//         geometry_msgs::Point temp;
-//         tf2::doTransform(p.position, temp, transform);
-
-//         // Associate data
-//         double association = -1;
-//         for (int i = 0; i < coneLocations.size(); i++)
-//         {
-//             double distance = sqrt(pow(coneLocations[i][0]-temp.x,2) + pow(coneLocations[i][1]-temp.y,2));
-            
-//             if (distance <= DISTANCE_THRESHOLD)
-//             {
-//                 association = i;
-//                 break;
-//             }
-//         }
-
-//         foundConeLocations.push_back({temp.x,temp.y,association});
-
-//         // Determine pose estimates - will need to send as individual poses to localisation node
-//     }
-//   }
-//   catch (tf2::TransformException &ex) {
-//     ROS_WARN("%s", ex.what());
-//     ros::Duration(1.0).sleep();
-//   }
-// }
-
-// void cameraSpigotCallback(geometry_msgs::PoseArray msg)
-// {
-//   //ROS_INFO_STREAM("Received spigot location data");
-
-//   foundSpigotLocations.clear();
-
-//   // Assume locations are in camera frame - transform to map frame
-//   geometry_msgs::TransformStamped transform;
-//   try {
-//     transform = tf_buffer.lookupTransform("map", "camera", ros::Time(0));
-    
-//     for (geometry_msgs::Pose p : msg.poses)
-//     {
-//         // Transform data
-//         geometry_msgs::Point temp;
-//         tf2::doTransform(p.position, temp, transform);
-
-//         // Associate data
-//         double association = -1;
-//         for (int i = 0; i < spigotLocations.size(); i++)
-//         {
-//             double distance = sqrt(pow(spigotLocations[i][0]-temp.x,2) + pow(spigotLocations[i][1]-temp.y,2));
-
-//             if (distance <= DISTANCE_THRESHOLD)
-//             {
-//                 association = i;
-//                 break;
-//             }
-//         }
-
-//         foundSpigotLocations.push_back({temp.x,temp.y,association});
-
-//         // Determine pose estimates - will need to send as individual poses to localisation node
-//     }
-//   }
-//   catch (tf2::TransformException &ex) {
-//     ROS_WARN("%s", ex.what());
-//     ros::Duration(1.0).sleep();
-//   }
-// }
 
 void readMapData()
 {
-    // char temp[100];
-    // getcwd(temp, sizeof(temp));
-    // ROS_INFO_STREAM(temp);
     ROS_INFO("Reading map data");
     
     std::ifstream fin;
-    // fin.open("ooi_locations.csv");
     fin.open(OOI_LOCATION_FILE);
 
     std::string line, part, type;
@@ -305,11 +211,9 @@ int main(int argc, char** argv) {
   
   tf2_ros::TransformListener listener(tf_buffer);
 
-  //   ros::Subscriber cameraConeSub = node.subscribe("conePositions/camera", 1000, cameraConeCallback);
-  //   ros::Subscriber cameraSpigotSub = node.subscribe("spigotPositions/camera", 1000, cameraSpigotCallback);
   ros::ServiceClient client = node.serviceClient<opencv_services::box_and_target_position>("box_and_target_position");
 
-  //opencv_services::box_and_target_position srv;
+  opencv_services::box_and_target_position srv;
   
   ros::Publisher objectPub = node.advertise<geometry_msgs::Point>("featurePositions/next", 1000);
   
@@ -325,49 +229,18 @@ int main(int argc, char** argv) {
   ros::Rate loop_rate(1);  // Run at 1Hz
   while (ros::ok())
   {
-//     geometry_msgs::Point targetFeature;
-//     bool found = false;
+    // Update cone/spigot locations
+    if (client.call(srv))
+    {
+      foundConeLocation = srv.response.box_position;
+      foundSpigotLocation = srv.response.target_position;
+    }
+    else
+    {
+      ROS_ERROR("Failed to call service to update target locations");
+      return 1;
+    }
 
-//     // Publish feature located by camera (for demonstration purposes) associated to feature
-//     if (operationOrder[operationCount] == 'c')
-//     {
-//         for (int i = 0; i < foundConeLocations.size(); i++)
-//         {
-//             if (foundConeLocations[i][2] == coneCount)
-//             {
-//                 targetFeature.x = foundConeLocations[i][0];
-//                 targetFeature.y = foundConeLocations[i][1];
-
-//                 found = true;
-//                 break;
-//             }
-//         }
-//     }
-//     else
-//     {
-//         for (int i = 0; i < foundSpigotLocations.size(); i++)
-//         {
-//             if (foundSpigotLocations[i][2] == spigotCount)
-//             {
-//                 targetFeature.x = foundSpigotLocations[i][0];
-//                 targetFeature.y = foundSpigotLocations[i][1];
-
-//                 found = true;
-//                 break;
-//             }
-//         }
-//     }
-
-//     if (found)
-//     {
-//         objectPub.publish(targetFeature);
-//         //ROS_INFO_STREAM("Publishing target feature location of type " << operationOrder[operationCount]);
-//     }
-//     else {
-//         ROS_INFO("An associated landmark was not found by the camera");
-//         ROS_INFO_STREAM(operationCount << " " << coneCount << " " << spigotCount);
-//     }
-    
     objectPub.publish(currTarget);
     
     ros::spinOnce();

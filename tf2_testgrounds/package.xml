@@ -78,7 +78,9 @@
   <build_depend>sensor_msgs</build_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <build_depend>std_srvs</build_depend>
-  <exec_depend>std_srvs</exec_depend>>
+  <exec_depend>std_srvs</exec_depend>
+  <build_depend>opencv_services</build_depend>
+  <exec_depend>opencv_services</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
