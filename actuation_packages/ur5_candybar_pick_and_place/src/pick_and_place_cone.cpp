@@ -16,13 +16,13 @@ geometry_msgs::Pose robotTarget;
 
 void targetCallback(geometry_msgs::PoseStamped msg)
 {
-    //ROS_INFO_STREAM("Received target pose data");
+    ROS_INFO_STREAM("Received target pose data");
 
     // Separate by header if map or odom - only take odom
     robotTarget = msg.pose;
 
-    //ROS_INFO_STREAM("Target pose update:");
-    //ROS_INFO_STREAM(robotTarget);
+    ROS_INFO_STREAM("Target pose update:");
+    ROS_INFO_STREAM(robotTarget);
 }
 
 void addObjectToPlanningScene(moveit::planning_interface::MoveGroupInterface& move_group_interface_arm) 
@@ -79,7 +79,7 @@ void addObjectToPlanningScene(moveit::planning_interface::MoveGroupInterface& mo
 
 void moveToReadyPose(moveit::planning_interface::MoveGroupInterface::Plan& my_plan_arm, moveit::planning_interface::MoveGroupInterface& move_group_interface_arm) 
 {
-    // 1. Move to home position
+    // Move to home position
     move_group_interface_arm.setJointValueTarget(move_group_interface_arm.getNamedTargetValues("home"));
 
     bool success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -88,7 +88,7 @@ void moveToReadyPose(moveit::planning_interface::MoveGroupInterface::Plan& my_pl
 
     move_group_interface_arm.move();
 
-    //2. Orient the TCP so that its horizontal
+    // Orient the TCP so that its horizontal
     geometry_msgs::PoseStamped current_pose;
     current_pose = move_group_interface_arm.getCurrentPose("ee_link");
 
@@ -113,7 +113,7 @@ void moveToReadyPose(moveit::planning_interface::MoveGroupInterface::Plan& my_pl
 
 void openGripper(moveit::planning_interface::MoveGroupInterface::Plan& my_plan_gripper, moveit::planning_interface::MoveGroupInterface& move_group_interface_gripper) 
 {
-    //3. Open the gripper
+    // Open the gripper
     move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("open"));
     bool success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     ROS_INFO_NAMED("tutorial", "Planning to open gripper %s", success ? "" : "FAILED");
@@ -122,7 +122,7 @@ void openGripper(moveit::planning_interface::MoveGroupInterface::Plan& my_plan_g
 
 void closeGripper(moveit::planning_interface::MoveGroupInterface::Plan& my_plan_gripper, moveit::planning_interface::MoveGroupInterface& move_group_interface_gripper) 
 {
-    // 5. Close the  gripper
+    // Close the  gripper
     move_group_interface_gripper.setJointValueTarget(move_group_interface_gripper.getNamedTargetValues("closed"));
 
     bool success = (move_group_interface_gripper.plan(my_plan_gripper) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 
 
     ///////////////////////////////////////////////////////////////////////////
-    ////////////////////////// SETUP INTERFACE NODES //////////////////////////
+    ////////////////////////// SETUP INTERFACE NODES //////////////////////////S
     ///////////////////////////////////////////////////////////////////////////
     
     ros::Subscriber targetSub = n.subscribe("robotTarget", 1000, targetCallback);
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
             current_pose = move_group_interface_arm.getCurrentPose("ee_link");
             geometry_msgs::Pose target_pose1;
 
-            // 4. Move the TCP close to the object
+            // Move the TCP close to the object
             target_pose1.orientation = current_pose.pose.orientation;
             target_pose1.position.x = 0.0;
             target_pose1.position.y = 0.67;
@@ -246,7 +246,7 @@ int main(int argc, char** argv)
 
             closeGripper(my_plan_gripper, move_group_interface_gripper);
 
-            // 6. Lift the Candy Bar up
+            // Lift the Candy Bar up
             target_pose1.position.z = target_pose1.position.z + 0.2;
             move_group_interface_arm.setPoseTarget(target_pose1);
 
@@ -255,6 +255,8 @@ int main(int argc, char** argv)
             ROS_INFO_NAMED("tutorial", "Planning to Lift Candy Bar up %s", success ? "" : "FAILED");
 
             move_group_interface_arm.move();
+
+            // Move Candybar to spigot hole
         }
         else
         {

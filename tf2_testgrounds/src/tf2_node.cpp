@@ -130,9 +130,9 @@ int main(int argc, char** argv){
   world2map.header.stamp = ros::Time::now();
   world2map.header.frame_id = "world";
   world2map.child_frame_id = "map";
-  world2map.transform.translation.x = 0.0;
+  world2map.transform.translation.x = -1.0;
   world2map.transform.translation.y = 0.0;
-  world2map.transform.translation.z = 5.0;
+  world2map.transform.translation.z = -0.4;
   world2map.transform.rotation.x = 0.0;
   world2map.transform.rotation.y = 0.0;
   world2map.transform.rotation.z = 0.0;
@@ -152,9 +152,9 @@ int main(int argc, char** argv){
   odom2base.header.stamp = ros::Time::now();
   odom2base.header.frame_id = "odom";
   odom2base.child_frame_id = "base_link";
-  odom2base.transform.translation.x = 0.0;
+  odom2base.transform.translation.x = 1.0;
   odom2base.transform.translation.y = 0.0;
-  odom2base.transform.translation.z = 0.0;
+  odom2base.transform.translation.z = 0.4;
   odom2base.transform.rotation.x = 0.0;
   odom2base.transform.rotation.y = 0.0;
   odom2base.transform.rotation.z = 0.0;
@@ -163,14 +163,14 @@ int main(int argc, char** argv){
   // Broadcast static frame transformations
 //   br.sendTransform(base2robot);
 //   ROS_INFO_STREAM("Broadcasting base_link-->robot_base transform");
-  br.sendTransform(base2camera);
-  ROS_INFO_STREAM("Broadcasting base_link-->camera transform");
+  // br.sendTransform(base2camera);
+  // ROS_INFO_STREAM("Broadcasting base_link-->camera transform");
   br.sendTransform(world2map);
   ROS_INFO_STREAM("Broadcasting world-->map transform");
-  br.sendTransform(map2odom);
-  ROS_INFO_STREAM("Broadcasting map-->odom transform");
-  br.sendTransform(odom2base);
-  ROS_INFO_STREAM("Broadcasting odom-->base_link transform");
+  // br.sendTransform(map2odom);
+  // ROS_INFO_STREAM("Broadcasting map-->odom transform");
+  // br.sendTransform(odom2base);
+  // ROS_INFO_STREAM("Broadcasting odom-->base_link transform");
 
   ros::spinOnce();
 
@@ -192,7 +192,7 @@ int main(int argc, char** argv){
     try {
       geometry_msgs::PoseStamped targetPosition = getTargetPosition();
       targetPub.publish(targetPosition);
-      //ROS_INFO_STREAM("Publishing robot target location:\n" << targetPosition.pose);
+      ROS_INFO_STREAM("Publishing robot target location:\n" << targetPosition.pose);
     }
     catch (tf2::ExtrapolationException &e) {
     }
