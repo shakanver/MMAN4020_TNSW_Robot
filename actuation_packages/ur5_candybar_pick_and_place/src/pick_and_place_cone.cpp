@@ -231,7 +231,7 @@ int main(int argc, char** argv)
             current_pose = move_group_interface_arm.getCurrentPose("ee_link");
             geometry_msgs::Pose target_pose1;
 
-            // Move the TCP close to the object
+            // Move the TCP close to the candybar
             target_pose1.orientation = current_pose.pose.orientation;
             target_pose1.position.x = 0.0;
             target_pose1.position.y = 0.67;
@@ -257,6 +257,43 @@ int main(int argc, char** argv)
             move_group_interface_arm.move();
 
             // Move Candybar to spigot hole
+            target_pose1.position.x = robotTarget.position.x;
+            target_pose1.position.y = robotTarget.position.y - 0.1;
+            // target_pose1.position.y = 0;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to move candybar towards spigot hole %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //Lower candybar
+            target_pose1.position.z = target_pose1.position.z - 0.4;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to lower candybar %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //Open Gripper
+            openGripper(my_plan_gripper, move_group_interface_gripper);
+
+
+            //Lift arm up
+            target_pose1.position.z = target_pose1.position.z + 0.6;
+            move_group_interface_arm.setPoseTarget(target_pose1);
+
+            success = (move_group_interface_arm.plan(my_plan_arm) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+            ROS_INFO_NAMED("tutorial", "Planning to raise arm %s", success ? "" : "FAILED");
+
+            move_group_interface_arm.move();
+
+            //Go back to home postion
+            moveToReadyPose(my_plan_arm, move_group_interface_arm);
         }
         else
         {

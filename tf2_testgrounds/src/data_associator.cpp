@@ -15,7 +15,7 @@
 #define DISTANCE_THRESHOLD 0.05
 
 // Are we directly forwarding camera data or using ground truh from map?
-bool usingGroundTruth = false;
+bool usingGroundTruth = true;
 
 const std::string OOI_LOCATION_FILE = "/home/shakeel/thesis/MMAN4020_TNSW_Robot/tf2_testgrounds/src/ooi_locations.txt";
 
@@ -82,7 +82,6 @@ bool updateOperation(std_srvs::Trigger::Request &req, std_srvs::Trigger::Respons
 
 void updateCurrTarget()
 {
-  // ROS_INFO_STREAM("Received candybar location data");
   
   // Locations provided are in robot base frame
   
